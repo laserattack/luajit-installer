@@ -4,7 +4,7 @@
 
 ## Windows 10+
 
-Update the archive_url in the installer to point to the newest LuaJIT release (or stick with version 2.1 if you prefer)
+Update the `archive_url` in the installer to point to the newest LuaJIT release (or stick with version 2.1 if you prefer)
 
 The script launches with just a double-click
 
