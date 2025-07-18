@@ -29,27 +29,30 @@ Function Main()
 End Function
 
 Function UnzipArchive(archive_path, dst)
-    Set fso = CreateObject("Scripting.FileSystemObject")
-    sourceFile = fso.GetAbsolutePathName(archive_path)
-    destFolder = fso.GetAbsolutePathName(dst)
-
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    sourceFile = fs.GetAbsolutePathName(archive_path)
+    destFolder = fs.GetAbsolutePathName(dst)
     tar_cmd = "tar -xf " & QuoteString(sourceFile) & " -C " & QuoteString(destFolder)
     ExecCmd "cmd /c " & tar_cmd, 0, True
+    Set fs = Nothing
 End Function
 
 Function FolderExists(path)
     Set fs = CreateObject("Scripting.FileSystemObject")
     FolderExists = fs.FolderExists(path)
+    Set fs = Nothing
 End Function
 
 Function CreateFolder(path)
     Set fs = CreateObject("Scripting.FileSystemObject")
     fs.CreateFolder path
+    Set fs = Nothing
 End Function
 
 Function ExecCmd(command, windowStyle, waitOnReturn)
     Set shell = CreateObject("WScript.Shell")
     shell.Run command, windowStyle, waitOnReturn
+    Set shell = Nothing
 End Function
 
 Function QuoteString(str)
