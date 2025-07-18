@@ -1,8 +1,8 @@
 # 🌑 LuaJIT installer
 
-`win/luajit_installer.vbs` - installer for win 10+
-
 ## Windows 10+
+
+`win/luajit_installer.vbs` - installer
 
 - Update the `download_link` (if needed) 
 - Update the `archive_url` in the installer to point to the newest LuaJIT release (or stick with version 2.1 if you prefer)
