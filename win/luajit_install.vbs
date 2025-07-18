@@ -4,12 +4,14 @@ archive_url = "https://github.com/LuaJIT/LuaJIT/archive/refs/tags/v2.1.ROLLING.z
 
 ' settings block end
 
-If InStr(LCase(WScript.FullName), "wscript") > 0 Then
-    CreateObject("WScript.Shell").Run "cscript //Nologo " & QuoteString(WScript.ScriptFullName), 1, False
-    WScript.Quit
-End If
-
 Function Main()
+
+    ' перезапуск самого себя с консолью
+    If InStr(LCase(WScript.FullName), "wscript") > 0 Then
+        ExecCmd "cscript //Nologo " & QuoteString(WScript.ScriptFullName), 1, False
+        WScript.Quit
+    End If
+
     WScript.Echo "installation initiated!"
 
     load_dir = "./LuaJIT/"
