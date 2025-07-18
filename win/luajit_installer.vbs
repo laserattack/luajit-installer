@@ -63,7 +63,7 @@ Function Main()
                 " && msvcbuild"
     ExecCmd build_cmd, 1, True
 
-    
+
 
     WScript.Echo "you can close this window"
 End Function
@@ -110,6 +110,34 @@ Function UnzipArchive(archive_path, dst)
     destFolder = fs.GetAbsolutePathName(dst)
     tar_cmd = "tar -xf " & QuoteString(sourceFile) & " -C " & QuoteString(destFolder)
     ExecCmd "cmd /c " & tar_cmd, 0, True
+    Set fs = Nothing
+End Function
+
+Function MoveFile(sourceFile, destFolder)
+    Set shell = CreateObject("WScript.Shell")
+    Set fs = CreateObject("Scripting.FileSystemObject")
+
+    If Not fs.FileExists(sourceFile) Then
+        WScript.Echo "file not found: " & sourceFile
+        Set shell = Nothing
+        Set fs = Nothing
+        WScript.Quit
+    End If
+    
+    cmd = "cmd /c copy " & Quote(sourceFile) & " " & Quote(destFolder) & " /Y"
+    
+    returnCode = shell.Run(cmd, 0, True)
+    
+    If returnCode = 0 Then
+        WScript.Echo "successful copying in " & destFolder
+    Else
+        WScript.Echo "copy error (code " & returnCode & ")"
+        Set shell = Nothing
+        Set fs = Nothing
+        WScript.Quit
+    End If
+    
+    Set sh = Nothing
     Set fs = Nothing
 End Function
 
