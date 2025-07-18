@@ -1,6 +1,7 @@
 ' settings block start
 
 archive_url = "https://github.com/LuaJIT/LuaJIT/archive/refs/tags/v2.1.ROLLING.zip"
+download_dir = "C:/LuaJIT/" ' auto-created if missing
 
 ' settings block end
 
@@ -13,18 +14,16 @@ Function Main()
     End If
 
     WScript.Echo "installation initiated!"
-
-    load_dir = "./LuaJIT/"
     
     WScript.Echo "preparing folders..."
-    If Not FolderExists(load_dir) Then CreateFolder load_dir
+    If Not FolderExists(download_dir) Then CreateFolder download_dir
     
-    archive_path = load_dir & "LuaJIT.zip"
+    archive_path = download_dir & "LuaJIT.zip"
     download_cmd = "curl -L -o " & QuoteString(archive_path) & " " & archive_url
     WScript.Echo "downloading sources..."
     ExecCmd "cmd /c " & download_cmd, 0, True
     WScript.Echo "unpacking archives..."
-    UnzipArchive archive_path, load_dir
+    UnzipArchive archive_path, download_dir
 
 End Function
 
