@@ -9,7 +9,15 @@ Function Main()
 
     ' перезапуск самого себя с консолью
     If InStr(LCase(WScript.FullName), "wscript") > 0 Then
-        ExecCmd "cscript //Nologo " & QuoteString(WScript.ScriptFullName), 1, False
+        ExecCmd "cmd /k cscript //Nologo " & QuoteString(WScript.ScriptFullName), 1, False
+        WScript.Quit
+    End If
+
+    path = VsCommandPromptPath()
+    If path <> "" Then
+        WScript.Echo "vs command prompt found"
+    Else
+        WScript.Echo "vs command prompt not found"
         WScript.Quit
     End If
 
@@ -25,6 +33,20 @@ Function Main()
     WScript.Echo "unpacking archives..."
     UnzipArchive archive_path, download_dir
 
+    WScript.Echo "you can close this window"
+End Function
+
+Function VsCommandPromptPath()
+    Set shell = CreateObject("WScript.Shell")
+    batPath = shell.Exec("cmd /c where /r ""C:\Program Files"" VsDevCmd.bat 2>nul").StdOut.ReadAll()
+    If batPath = "" Then batPath = shell.Exec("cmd /c where /r ""C:\Program Files (x86)"" VsDevCmd.bat 2>nul").StdOut.ReadAll()
+    
+    If batPath <> "" Then
+        batPath = Trim(Split(batPath, vbCrLf)(0))
+        VsCommandPromptPath = batPath
+    Else
+        VsCommandPromptPath = ""
+    End If
 End Function
 
 Function UnzipArchive(archive_path, dst)
@@ -48,14 +70,14 @@ Function CreateFolder(path)
     Set fs = Nothing
 End Function
 
+Function QuoteString(str)
+    QuoteString = Chr(34) & str & Chr(34)
+End Function
+
 Function ExecCmd(command, windowStyle, waitOnReturn)
     Set shell = CreateObject("WScript.Shell")
     shell.Run command, windowStyle, waitOnReturn
     Set shell = Nothing
-End Function
-
-Function QuoteString(str)
-    QuoteString = Chr(34) & str & Chr(34)
 End Function
 
 Main()
