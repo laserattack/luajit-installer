@@ -1,6 +1,6 @@
 # 🌑 LuaJIT installer
 
-`win/luajit_install.vbs` - installer for win 10+
+`win/luajit_installer.vbs` - installer for win 10+
 
 ## Windows 10+
 
