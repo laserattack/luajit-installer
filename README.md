@@ -2,9 +2,9 @@
 
 ## Windows 10+
 
-**!!! first of all !!!**:
-
 ===
+
+![](assets/command_prompt.png)
 
 To build the LuaJIT script, it uses Microsoft tools. If you don't have 'Command Prompt for VS', install Visual Studio Build Tools ([click to download](https://aka.ms/vs/17/release/vs_buildtools.exe)). The installer has a graphical interface - just click 'Install'.
 
