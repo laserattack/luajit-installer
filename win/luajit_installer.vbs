@@ -55,11 +55,15 @@ Function Main()
     src_path = download_dir & extractedFolder & "/src"
     WScript.Echo "LuaJIT src path: " & src_path
 
+    RenameFileIfExists src_path, "luajit_rolling.h", "luajit.h"
+
     WScript.Echo "Building LuaJIT..."
     build_cmd = "cmd /c call " & QuoteString(vs_command_prompt_path) & _
                 " && cd /D " & QuoteString(src_path) & _
                 " && msvcbuild"
     ExecCmd build_cmd, 1, True
+
+    
 
     WScript.Echo "you can close this window"
 End Function
@@ -76,6 +80,28 @@ Function VsCommandPromptPath()
         VsCommandPromptPath = ""
     End If
     Set shell = Nothing
+End Function
+
+Function RenameFileIfExists(folderPath, originalName, newName)
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    originalPath = fs.BuildPath(folderPath, originalName)
+    newPath = fs.BuildPath(folderPath, newName)
+
+    If fs.FileExists(newPath) Then
+        WScript.Echo "file " & newName & " already exists"
+        Exit Function
+    End If
+
+    If fs.FileExists(originalPath) Then
+        fs.MoveFile originalPath, newPath
+        WScript.Echo "file " & originalName & " renamed to " & newName
+    Else
+        WScript.Echo "file " & originalName & " not found"
+        Set fs = Nothing
+        WScript.Quit
+    End If
+
+    Set fs = Nothing
 End Function
 
 Function UnzipArchive(archive_path, dst)
