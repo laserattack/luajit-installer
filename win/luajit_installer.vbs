@@ -13,8 +13,8 @@ Function Main()
         WScript.Quit
     End If
 
-    path = VsCommandPromptPath()
-    If path <> "" Then
+    vs_command_prompt_path = VsCommandPromptPath()
+    If vs_command_prompt_path <> "" Then
         WScript.Echo "vs command prompt found"
     Else
         WScript.Echo "vs command prompt not found"
@@ -30,8 +30,36 @@ Function Main()
     download_cmd = "curl -L -o " & QuoteString(archive_path) & " " & archive_url
     WScript.Echo "downloading sources..."
     ExecCmd "cmd /c " & download_cmd, 0, True
-    WScript.Echo "unpacking archives..."
+    WScript.Echo "unpacking archive with LuaJit..."
     UnzipArchive archive_path, download_dir
+
+    WScript.Echo "LuaJIT folder search..."
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    Set subfolders = fs.GetFolder(download_dir).SubFolders
+    Dim extractedFolder
+    For Each subfolder In subfolders
+        If InStr(LCase(subfolder.Name), "luajit") > 0 Then
+            extractedFolder = subfolder.Name
+            Exit For
+        End If
+    Next
+    If extractedFolder <> "" Then
+        WScript.Echo "folder: " & extractedFolder
+    Else
+        WScript.Echo "luajit folder not found in" & destFolder
+        Set fs = Nothing
+        WScript.Quit
+    End If
+    Set fs = Nothing
+
+    src_path = download_dir & extractedFolder & "/src"
+    WScript.Echo "LuaJIT src path: " & src_path
+
+    WScript.Echo "Building LuaJIT..."
+    build_cmd = "cmd /c call " & QuoteString(vs_command_prompt_path) & _
+                " && cd /D " & QuoteString(src_path) & _
+                " && msvcbuild"
+    ExecCmd build_cmd, 1, True
 
     WScript.Echo "you can close this window"
 End Function
@@ -47,6 +75,7 @@ Function VsCommandPromptPath()
     Else
         VsCommandPromptPath = ""
     End If
+    Set shell = Nothing
 End Function
 
 Function UnzipArchive(archive_path, dst)
