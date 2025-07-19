@@ -1,7 +1,7 @@
 ' settings block start
 
 archive_url = "https://github.com/LuaJIT/LuaJIT/archive/refs/tags/v2.1.ROLLING.zip"
-download_dir = "C:/LuaJIT/" ' auto-created if missing
+download_dir_path = "C:/LuaJIT/" ' auto-created if missing
 
 ' settings block end
 
@@ -13,6 +13,8 @@ Function Main()
         WScript.Quit
     End If
 
+    WScript.Echo "installation initiated!"
+    WScript.Echo "vs command prompt search..."
     vs_command_prompt_path = VsCommandPromptPathSafe()
     If vs_command_prompt_path <> "" Then
         WScript.Echo "vs command prompt found"
@@ -20,21 +22,19 @@ Function Main()
         WScript.Echo "vs command prompt not found"
         WScript.Quit
     End If
-
-    WScript.Echo "installation initiated!"
     
     WScript.Echo "preparing folders..."
-    If Not FolderExists(download_dir) Then CreateFolder download_dir
+    If Not FolderExists(download_dir_path) Then CreateFolder download_dir_path
     
-    archive_path = download_dir & "LuaJIT.zip"
+    archive_path = BuildPath(download_dir_path, "LuaJIT.zip")
     download_cmd = "curl -L -o " & QuoteString(archive_path) & " " & archive_url
     WScript.Echo "downloading sources..."
     RunCmd "cmd /c " & download_cmd, 0, True
     WScript.Echo "unpacking archive with LuaJIT..."
-    UnzipArchiveSafe archive_path, download_dir
+    UnzipArchiveSafe archive_path, download_dir_path
 
     WScript.Echo "LuaJIT folder search..."
-    Set subfolders = GetFolder(download_dir).SubFolders
+    Set subfolders = GetFolder(download_dir_path).SubFolders
     Dim extracted_folder
     For Each subfolder In subfolders
         If InStr(LCase(subfolder.Name), "luajit") > 0 Then
@@ -49,9 +49,9 @@ Function Main()
         WScript.Quit
     End If
 
-    src_path = download_dir & extracted_folder & "/src"
-    luajit_exe_path = src_path & "/luajit.exe"
-    lua51_dll_path = src_path & "/lua51.dll"
+    src_path = BuildPath(BuildPath(download_dir_path, extracted_folder), "src")
+    luajit_exe_path = BuildPath(src_path, "luajit.exe")
+    lua51_dll_path = BuildPath(src_path, "lua51.dll")
 
     If Not FileExists(src_path & "/luajit.exe") Then
         RenameFileSafe src_path, "luajit_rolling.h", "luajit.h"
@@ -64,15 +64,15 @@ Function Main()
         WScript.Echo "LuaJIT is already built"
     End If
 
-    CopyFileSafe luajit_exe_path, download_dir
-    CopyFileSafe lua51_dll_path, download_dir
+    CopyFileSafe luajit_exe_path, download_dir_path
+    CopyFileSafe lua51_dll_path, download_dir_path
 
-    lua_folder_path = BuildPath(download_dir, "lua")
+    lua_folder_path = BuildPath(download_dir_path, "lua")
     If Not FolderExists(lua_folder_path) Then
         CreateFolder lua_folder_path
-        WScript.Echo "folder created: " & BuildPath(download_dir, "lua")
+        WScript.Echo "folder created: " & BuildPath(download_dir_path, "lua")
     Else
-        WScript.Echo "folder already exists: " & BuildPath(download_dir, "lua")
+        WScript.Echo "folder already exists: " & BuildPath(download_dir_path, "lua")
     End If
 
     jit_folder_path = BuildPath(lua_folder_path, "jit")
@@ -84,7 +84,7 @@ Function Main()
 
     WScript.Echo "cleanup..."
     DeletePathSafe archive_path
-    DeletePathSafe BuildPath(download_dir, extracted_folder)
+    DeletePathSafe BuildPath(download_dir_path, extracted_folder)
 
     WScript.Echo "LuaJIT successfully installed! you can close this window"
 End Function
