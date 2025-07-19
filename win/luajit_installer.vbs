@@ -9,7 +9,7 @@ Function Main()
 
     ' перезапуск самого себя с консолью
     If InStr(LCase(WScript.FullName), "wscript") > 0 Then
-        ExecCmd "cmd /k cscript //Nologo " & QuoteString(WScript.ScriptFullName), 1, False
+        RunCmd "cmd /k cscript //Nologo " & QuoteString(WScript.ScriptFullName), 1, False
         WScript.Quit
     End If
 
@@ -29,7 +29,7 @@ Function Main()
     archive_path = download_dir & "LuaJIT.zip"
     download_cmd = "curl -L -o " & QuoteString(archive_path) & " " & archive_url
     WScript.Echo "downloading sources..."
-    ExecCmd "cmd /c " & download_cmd, 0, True
+    RunCmd "cmd /c " & download_cmd, 0, True
     WScript.Echo "unpacking archive with LuaJIT..."
     UnzipArchiveSafe archive_path, download_dir
 
@@ -62,7 +62,7 @@ Function Main()
         build_cmd = "cmd /c call " & QuoteString(vs_command_prompt_path) & _
                     " && cd /D " & QuoteString(src_path) & _
                     " && msvcbuild"
-        ExecCmd build_cmd, 1, True
+        RunCmd build_cmd, 1, True
     Else
         WScript.Echo "LuaJIT is already built"
     End If
@@ -153,7 +153,7 @@ Function UnzipArchiveSafe(archive_path, dst_folder_path)
 
     tar_cmd = "tar -xf " & QuoteString(archive_path) & " -C " & QuoteString(dst_folder_path)
     On Error Resume Next
-    ExecCmd "cmd /c " & tar_cmd, 0, True
+    RunCmd "cmd /c " & tar_cmd, 0, True
     
     ' обработка ошибок выполнения
     If Err.Number <> 0 Then
@@ -357,7 +357,7 @@ Function QuoteString(str)
     QuoteString = Chr(34) & str & Chr(34)
 End Function
 
-Function ExecCmd(command, window_style, wait_on_return)
+Function RunCmd(command, window_style, wait_on_return)
     Set shell = CreateObject("WScript.Shell")
     shell.Run command, window_style, wait_on_return
     Set shell = Nothing
