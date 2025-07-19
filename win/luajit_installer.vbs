@@ -54,7 +54,7 @@ Function Main()
     lua51_dll_path = BuildPath(luajit_src_path, "lua51.dll")
 
     If Not FileExists(luajit_exe_path) Then
-        RenameFileSafe luajit_src_path, "luajit_rolling.h", "luajit.h"
+        RenameFileSafe BuildPath(luajit_src_path, "luajit_rolling.h"), BuildPath(luajit_src_path, "luajit.h")
         WScript.Echo "Building LuaJIT..."
         build_cmd = "cmd /c call " & QuoteString(vs_command_prompt_path) & _
                     " && cd /D " & QuoteString(luajit_src_path) & _
@@ -98,17 +98,7 @@ End Function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-Function RenameFileSafe(folder_path, original_name, new_name)
-    
-    ' Проверка существования папки
-    If Not FolderExists(folder_path) Then
-        WScript.Echo "error: directory not found: " & folder_path
-        WScript.Quit
-    End If
-
-    ' создание нового путя
-    original_path = BuildPath(folder_path, original_name)
-    new_path = BuildPath(folder_path, new_name)
+Function RenameFileSafe(original_path, new_path)
 
     ' файл уже сущестувует
     If FileExists(new_path) Then
@@ -124,9 +114,9 @@ Function RenameFileSafe(folder_path, original_name, new_name)
             WScript.Echo "error: failed to rename file: " & Err.Description
         End If
         On Error GoTo 0
-        WScript.Echo "file " & original_name & " renamed to " & new_name
+        WScript.Echo "file " & original_path & " renamed to " & new_path
     Else
-        WScript.Echo "file " & original_name & " not found"
+        WScript.Echo "file " & original_path & " not found"
         WScript.Quit
     End If
 
