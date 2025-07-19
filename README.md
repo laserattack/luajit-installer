@@ -14,7 +14,7 @@ To build LuaJIT with this script, you need _Microsoft Build Tools_. You probably
     - C++ x64/x86 build tools
     - Windows SDK
 
-[](assets/build_tools.jpg)
+![](assets/build_tools.jpg)
 
 ### Installing
 
