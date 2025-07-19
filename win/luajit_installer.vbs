@@ -45,7 +45,7 @@ Function Main()
     If extracted_folder_path <> "" Then
         WScript.Echo "exctracted folder path: " & extracted_folder_path
     Else
-        WScript.Echo "luajit folder not found in" & dest_folder
+        WScript.Echo "luajit folder not found in " & download_dir_path
         WScript.Quit
     End If
 
@@ -102,7 +102,7 @@ Function RenameFileSafe(original_path, new_path)
 
     ' файл уже сущестувует
     If FileExists(new_path) Then
-        WScript.Echo "file " & new_name & " already exists"
+        WScript.Echo "file " & new_path & " already exists"
         Exit Function
     End If
 
@@ -317,7 +317,7 @@ Function DeleteFile(path, force_deletion)
     Set fs = Nothing
 End Function
 
-Function DeleteFolder(path, force_deletetion)
+Function DeleteFolder(path, force_deletion)
     Set fs = CreateObject("Scripting.FileSystemObject")
     fs.DeleteFolder path, force_deletion
     Set fs = Nothing
