@@ -34,8 +34,7 @@ Function Main()
     UnzipArchiveSafe archive_path, download_dir
 
     WScript.Echo "LuaJIT folder search..."
-    Set fs = CreateObject("Scripting.FileSystemObject")
-    Set subfolders = fs.GetFolder(download_dir).SubFolders
+    Set subfolders = GetFolder(download_dir).SubFolders
     Dim extracted_folder
     For Each subfolder In subfolders
         If InStr(LCase(subfolder.Name), "luajit") > 0 Then
@@ -47,10 +46,8 @@ Function Main()
         WScript.Echo "folder: " & extracted_folder
     Else
         WScript.Echo "luajit folder not found in" & dest_folder
-        Set fs = Nothing
         WScript.Quit
     End If
-    Set fs = Nothing
 
     src_path = download_dir & extracted_folder & "/src"
     luajit_exe_path = src_path & "/luajit.exe"
@@ -70,19 +67,24 @@ Function Main()
     CopyFileSafe luajit_exe_path, download_dir
     CopyFileSafe lua51_dll_path, download_dir
 
-    If Not FolderExists(download_dir & "lua") Then
-        CreateFolder download_dir & "lua"
-        WScript.Echo "folder created: " & download_dir & "lua"
+    lua_folder_path = BuildPath(download_dir, "lua")
+    If Not FolderExists(lua_folder_path) Then
+        CreateFolder lua_folder_path
+        WScript.Echo "folder created: " & BuildPath(download_dir, "lua")
     Else
-        WScript.Echo "folder already exists: " & download_dir & "lua"
+        WScript.Echo "folder already exists: " & BuildPath(download_dir, "lua")
     End If
 
-    jit_folder_path = download_dir & "lua/jit"
-    CopyFolderSafe src_path & "/jit",  jit_folder_path
+    jit_folder_path = BuildPath(lua_folder_path, "jit")
+    If Not FolderExists(jit_folder_path) Then
+        CreateFolder jit_folder_path
+        WScript.Echo "folder created: " & jit_folder_path
+    End If
+    CopyFolderSafe BuildPath(src_path, "jit"),  jit_folder_path
 
     WScript.Echo "cleanup..."
     DeletePathSafe archive_path
-    DeletePathSafe download_dir & extracted_folder
+    DeletePathSafe BuildPath(download_dir, extracted_folder)
 
     WScript.Echo "LuaJIT successfully installed! you can close this window"
 End Function
@@ -334,6 +336,12 @@ End Function
 Function FileExists(path)
     Set fs = CreateObject("Scripting.FileSystemObject")
     FileExists = fs.FileExists(path)
+    Set fs = Nothing
+End Function
+
+Function GetFolder(path)
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    Set GetFolder = fs.GetFolder(path)
     Set fs = Nothing
 End Function
 
