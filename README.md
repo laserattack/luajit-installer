@@ -11,7 +11,7 @@ To build LuaJIT with this script, you need _Microsoft Build Tools_. You probably
 - Download _Microsoft Build Tools_ installer for example here [aka.ms/vs/17/release/vs_buildtools.exe](https://aka.ms/vs/17/release/vs_buildtools.exe)
 - Run it
 - Next, you need to select a list of tools that need to be installed, the minimum list is as follows:
--   13123
+    - 123
 
 
 ### Installing
