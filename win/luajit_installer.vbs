@@ -87,6 +87,8 @@ Function Main()
     DeletePathSafe extracted_folder_path
 
     WScript.Echo "LuaJIT successfully installed! you can close this window"
+    WScript.Echo "don't forget to add " & download_dir_path & " to your system environment variables"
+    WScript.Echo "you can close this window"
 End Function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
