@@ -31,7 +31,7 @@ Function Main()
     WScript.Echo "downloading sources..."
     ExecCmd "cmd /c " & download_cmd, 0, True
     WScript.Echo "unpacking archive with LuaJIT..."
-    UnzipArchive archive_path, download_dir
+    UnzipArchiveSafe archive_path, download_dir
 
     WScript.Echo "LuaJIT folder search..."
     Set fs = CreateObject("Scripting.FileSystemObject")
@@ -57,7 +57,7 @@ Function Main()
     lua51_dll_path = src_path & "/lua51.dll"
 
     If Not FileExists(src_path & "/luajit.exe") Then
-        RenameFileIfExists src_path, "luajit_rolling.h", "luajit.h"
+        RenameFile src_path, "luajit_rolling.h", "luajit.h"
         WScript.Echo "Building LuaJIT..."
         build_cmd = "cmd /c call " & QuoteString(vs_command_prompt_path) & _
                     " && cd /D " & QuoteString(src_path) & _
@@ -81,8 +81,8 @@ Function Main()
     CopyFolderSafe src_path & "/jit",  jit_folder_path
 
     WScript.Echo "cleanup..."
-    DeletePath archive_path
-    DeletePath download_dir & extracted_folder
+    DeletePathSafe archive_path
+    DeletePathSafe download_dir & extracted_folder
 
     WScript.Echo "LuaJIT successfully installed! you can close this window"
 End Function
@@ -101,7 +101,7 @@ Function VsCommandPromptPath()
     Set shell = Nothing
 End Function
 
-Function RenameFileIfExists(folder_path, original_name, new_name)
+Function RenameFile(folder_path, original_name, new_name)
     Set fs = CreateObject("Scripting.FileSystemObject")
     originalPath = fs.BuildPath(folder_path, original_name)
     newPath = fs.BuildPath(folder_path, new_name)
@@ -130,57 +130,107 @@ End Function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-Function UnzipArchive(archive_path, dst_folder_path)
+Function UnzipArchiveSafe(archive_path, dst_folder_path)
+    If Not FileExists(archive_path) Then
+        WScript.Echo "error: archive path not found: " & archive_path
+        WScript.Quit
+    End If
+    
+    If Not FolderExists(dst_folder_path) Then
+        WScript.Echo "error: dst folder not found: " & dst_folder_path
+        WScript.Quit
+    End If
+
     tar_cmd = "tar -xf " & QuoteString(archive_path) & " -C " & QuoteString(dst_folder_path)
     ExecCmd "cmd /c " & tar_cmd, 0, True
 End Function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-' Копирование папки source_folder_path в папку dst_folder_path.
+' Копирование С ПЕРЕЗАПИСЬЮ папки src_folder_path в папку dst_folder_path.
 ' В случае какой-то ошибки завершает работу скрипта
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-Function CopyFolderSafe(source_folder_path, dst_folder_path)
+Function CopyFolderSafe(src_folder_path, dst_folder_path)
     
-    If Not FolderExists(source_folder_path) Then
-        WScript.Echo "error: source folder not found: " & source_folder_path
+    ' dst folder - не папка а файл
+    If FileExists(dst_folder_path) Then
+        WScript.Echo "error: dst path is a file, not a folder: " & dst_folder_path
         WScript.Quit
     End If
-    
-    If FileExists(dst_folder_path) Then
-        WScript.Echo "error: destination path is a file, not a folder: " & dst_folder_path
+
+    ' src folder - не папка а файл
+    If FileExists(src_folder_path) Then
+        WScript.Echo "error: src path is a file, not a folder: " & src_folder_path
+        WScript.Quit
+    End If
+
+    ' далее это либо папка либо вообще нет такого пути
+
+    ' не существует src директории
+    If Not FolderExists(dst_folder_path) Then
+        WScript.Echo "error: dst folder not found: " & dst_folder_path
+        WScript.Quit
+    End If
+
+    ' не существует dst директории
+    If Not FolderExists(src_folder_path) Then
+        WScript.Echo "error: src folder not found: " & src_folder_path
         WScript.Quit
     End If
     
     On Error Resume Next
-    CopyFolder source_folder_path, dst_folder_path, True
+    CopyFolder src_folder_path, dst_folder_path, True
+
+    ' вывод ошибки если была какая то
     If Err.Number <> 0 Then
         WScript.Echo "error: " & Err.Description
         WScript.Quit
     End If
     On Error GoTo 0
     
-    Set fs = Nothing
 End Function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-' Копирование файла source_path в dest_folder.
+' Копирование С ПЕРЕЗАПИСЬЮ файла source_path в dst_folder_path.
 ' В случае какой-то ошибки завершает работу скрипта
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-Function CopyFileSafe(source_path, dest_folder)
+Function CopyFileSafe(src_path, dst_folder_path)
     
-    If Not FileExists(source_path) Then
-        WScript.Echo "error: file not found"
+    ' dst folder - не папка а файл
+    If FileExists(dst_folder_path) Then
+        WScript.Echo "error: dst path is a file, not a folder: " & dst_folder_path
+        WScript.Quit
+    End If
+
+    ' src path - не файл а папка
+    If FolderExists(src_path) Then
+        WScript.Echo "error: src path is a folder, not a file: " & src_path
+        WScript.Quit
+    End If
+
+    ' далее либо всё хорошо, либо нет какого то из путей
+
+    ' не существует файла
+    If Not FileExists(src_path) Then
+        WScript.Echo "error: file not found: " & src_path
         WScript.Quit
     End If
     
+    ' не существует папки
+    If Not FolderExists(dst_folder_path) Then
+        WScript.Echo "error: folder not found: " & dst_folder_path
+        WScript.Quit
+    End If
+
     On Error Resume Next
-    CopyFile source_path, dest_folder & "/", True
+    CopyFile src_path, dst_folder_path, True
+
+    ' вывод ошибки если была какая то
     If Err.Number <> 0 Then
         WScript.Echo "error: " & Err.Description
         WScript.Quit
@@ -196,8 +246,9 @@ End Function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-Function DeletePath(path)
+Function DeletePathSafe(path)
     
+    ' Либо нет такого файла либо нет такой папки
     If Not FileExists(path) And Not FolderExists(path) Then
         WScript.Echo "error: path not found: " & path
         WScript.Quit
@@ -212,6 +263,7 @@ Function DeletePath(path)
         WScript.Echo "folder deleted: " & path
     End If
     
+    ' вывод ошибки если была какая то
     If Err.Number <> 0 Then
         WScript.Echo "error: " & Err.Description
         WScript.Quit
