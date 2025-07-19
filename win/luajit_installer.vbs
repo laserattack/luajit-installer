@@ -57,7 +57,7 @@ Function Main()
     lua51_dll_path = src_path & "/lua51.dll"
 
     If Not FileExists(src_path & "/luajit.exe") Then
-        RenameFile src_path, "luajit_rolling.h", "luajit.h"
+        RenameFileSafe src_path, "luajit_rolling.h", "luajit.h"
         WScript.Echo "Building LuaJIT..."
         build_cmd = "cmd /c call " & QuoteString(vs_command_prompt_path) & _
                     " && cd /D " & QuoteString(src_path) & _
@@ -87,17 +87,41 @@ Function Main()
     WScript.Echo "LuaJIT successfully installed! you can close this window"
 End Function
 
-Function RenameFile(folder_path, original_name, new_name)
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+' Переименование файла с именем original_name, находящегося
+' в директории folder_path в new_name
+
+' В случае какой-то ошибки завершает работу скрипта
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Function RenameFileSafe(folder_path, original_name, new_name)
+    
+    ' Проверка существования папки
+    If Not FolderExists(folder_path) Then
+        WScript.Echo "error: directory not found: " & folder_path
+        WScript.Quit
+    End If
+
+    ' создание нового путя
     originalPath = BuildPath(folder_path, original_name)
     newPath = BuildPath(folder_path, new_name)
 
+    ' файл уже сущестувует
     If FileExists(newPath) Then
         WScript.Echo "file " & new_name & " already exists"
         Exit Function
     End If
 
+    ' переименование
     If FileExists(originalPath) Then
+        On Error Resume Next
         MoveFile originalPath, newPath
+        If Err.Number <> 0 Then
+            WScript.Echo "error: failed to rename file: " & Err.Description
+        End If
+        On Error GoTo 0
         WScript.Echo "file " & original_name & " renamed to " & new_name
     Else
         WScript.Echo "file " & original_name & " not found"
@@ -140,17 +164,6 @@ End Function
 
 Function UnzipArchiveSafe(archive_path, dst_folder_path)
 
-    ' проверки на несоответствие типов файлов
-    If FolderExists(archive_path) Then
-        WScript.Echo "error: archive path is a folder, not a file: " & archive_path
-        WScript.Quit
-    End If
-
-    If FileExists(dst_folder_path) Then
-        WScript.Echo "error: dst path is a file, not a folder: " & dst_folder_path
-        WScript.Quit
-    End If
-
     ' проверки наличия файлов
     If Not FileExists(archive_path) Then
         WScript.Echo "error: archive path not found: " & archive_path
@@ -183,20 +196,6 @@ End Function
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 Function CopyFolderSafe(src_folder_path, dst_folder_path)
-    
-    ' dst folder - не папка а файл
-    If FileExists(dst_folder_path) Then
-        WScript.Echo "error: dst path is a file, not a folder: " & dst_folder_path
-        WScript.Quit
-    End If
-
-    ' src folder - не папка а файл
-    If FileExists(src_folder_path) Then
-        WScript.Echo "error: src path is a file, not a folder: " & src_folder_path
-        WScript.Quit
-    End If
-
-    ' далее это либо папка либо вообще нет такого пути
 
     ' не существует src директории
     If Not FolderExists(dst_folder_path) Then
@@ -230,20 +229,6 @@ End Function
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 Function CopyFileSafe(src_path, dst_folder_path)
-    
-    ' dst folder - не папка а файл
-    If FileExists(dst_folder_path) Then
-        WScript.Echo "error: dst path is a file, not a folder: " & dst_folder_path
-        WScript.Quit
-    End If
-
-    ' src path - не файл а папка
-    If FolderExists(src_path) Then
-        WScript.Echo "error: src path is a folder, not a file: " & src_path
-        WScript.Quit
-    End If
-
-    ' далее либо всё хорошо, либо нет какого то из путей
 
     ' не существует файла
     If Not FileExists(src_path) Then
