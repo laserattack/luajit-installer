@@ -30,7 +30,7 @@ Function Main()
     download_cmd = "curl -L -o " & QuoteString(archive_path) & " " & archive_url
     WScript.Echo "downloading sources..."
     ExecCmd "cmd /c " & download_cmd, 0, True
-    WScript.Echo "unpacking archive with LuaJit..."
+    WScript.Echo "unpacking archive with LuaJIT..."
     UnzipArchive archive_path, download_dir
 
     WScript.Echo "LuaJIT folder search..."
@@ -67,8 +67,8 @@ Function Main()
         WScript.Echo "LuaJIT is already built"
     End If
 
-    CopyFile luajit_exe_path, download_dir
-    CopyFile lua51_dll_path, download_dir
+    CopyFileSafe luajit_exe_path, download_dir
+    CopyFileSafe lua51_dll_path, download_dir
 
     If Not FolderExists(download_dir & "lua") Then
         CreateFolder download_dir & "lua"
@@ -78,7 +78,7 @@ Function Main()
     End If
 
     jit_folder_path = download_dir & "lua/jit"
-    CopyFolder src_path & "/jit",  jit_folder_path
+    CopyFolderSafe src_path & "/jit",  jit_folder_path
 
     WScript.Echo "cleanup..."
     DeletePath archive_path
@@ -123,62 +123,70 @@ Function RenameFileIfExists(folder_path, original_name, new_name)
     Set fs = Nothing
 End Function
 
-Function UnzipArchive(archive_path, dst)
-    Set fs = CreateObject("Scripting.FileSystemObject")
-    sourceFile = fs.GetAbsolutePathName(archive_path)
-    dest_folder = fs.GetAbsolutePathName(dst)
-    tar_cmd = "tar -xf " & QuoteString(sourceFile) & " -C " & QuoteString(dest_folder)
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+' Распаковка архива archive_path в папку dst_folder_path.
+' В случае какой-то ошибки завершает работу скрипта
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Function UnzipArchive(archive_path, dst_folder_path)
+    tar_cmd = "tar -xf " & QuoteString(archive_path) & " -C " & QuoteString(dst_folder_path)
     ExecCmd "cmd /c " & tar_cmd, 0, True
-    Set fs = Nothing
 End Function
 
-Function CopyFolder(source_folder, dest_folder)
-    Set fs = CreateObject("Scripting.FileSystemObject")
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+' Копирование папки source_folder_path в папку dst_folder_path.
+' В случае какой-то ошибки завершает работу скрипта
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Function CopyFolderSafe(source_folder_path, dst_folder_path)
     
-    If Not FolderExists(source_folder) Then
-        WScript.Echo "source folder not found: " & source_folder
-        Set fs = Nothing
+    If Not FolderExists(source_folder_path) Then
+        WScript.Echo "error: source folder not found: " & source_folder_path
         WScript.Quit
     End If
     
-    If fs.FileExists(dest_folder) Then
-        WScript.Echo "destination path is a file, not a folder: " & dest_folder
-        Set fs = Nothing
+    If FileExists(dst_folder_path) Then
+        WScript.Echo "error: destination path is a file, not a folder: " & dst_folder_path
         WScript.Quit
     End If
     
     On Error Resume Next
-    fs.CopyFolder source_folder, dest_folder, True
+    CopyFolder source_folder_path, dst_folder_path, True
     If Err.Number <> 0 Then
-        WScript.Echo "copy folder error: " & Err.Description
-        Set fs = Nothing
+        WScript.Echo "error: " & Err.Description
         WScript.Quit
     End If
     On Error GoTo 0
     
-    WScript.Echo "folder " & source_folder & " copied successfully to " & dest_folder
     Set fs = Nothing
 End Function
 
-Function CopyFile(source_path, dest_folder)
-    Set fs = CreateObject("Scripting.FileSystemObject")
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+' Копирование файла source_path в dest_folder.
+' В случае какой-то ошибки завершает работу скрипта
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Function CopyFileSafe(source_path, dest_folder)
     
     If Not FileExists(source_path) Then
-        WScript.Echo "source file not found"
-        Set fs = Nothing
+        WScript.Echo "error: file not found"
         WScript.Quit
     End If
     
     On Error Resume Next
-    fs.CopyFile source_path, dest_folder & "/", True
+    CopyFile source_path, dest_folder & "/", True
     If Err.Number <> 0 Then
-        WScript.Echo "copy error: " & Err.Description
-        Set fs = Nothing
+        WScript.Echo "error: " & Err.Description
         WScript.Quit
     End If
     On Error GoTo 0
     
-    WScript.Echo "File " & source_path & " copied successfully to " & dest_folder
 End Function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -191,7 +199,7 @@ End Function
 Function DeletePath(path)
     
     If Not FileExists(path) And Not FolderExists(path) Then
-        WScript.Echo "path not found: " & path
+        WScript.Echo "error: path not found: " & path
         WScript.Quit
     End If
     
@@ -205,7 +213,7 @@ Function DeletePath(path)
     End If
     
     If Err.Number <> 0 Then
-        WScript.Echo "delete error: " & Err.Description
+        WScript.Echo "error: " & Err.Description
         WScript.Quit
     End If
     On Error GoTo 0
@@ -216,8 +224,21 @@ End Function
 
 ' Базовые функции. Не делают никаких проверок.
 ' Просто выполняют указанное действие.
+' Просто обертки над соответствующими COM-функциями
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Function CopyFolder(src_path, dst_path, overwriting)
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    fs.CopyFolder src_path, dst_path, overwriting
+    Set fs = Nothing
+End Function
+
+Function CopyFile(src_path, dst_path, overwriting)
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    fs.CopyFile src_path, dst_path, overwriting
+    Set fs = Nothing
+End Function
 
 Function DeleteFile(path, force_deletetion)
     Set fs = CreateObject("Scripting.FileSystemObject")
