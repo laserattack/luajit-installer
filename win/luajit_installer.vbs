@@ -35,29 +35,29 @@ Function Main()
 
     WScript.Echo "LuaJIT folder search..."
     Set subfolders = GetFolder(download_dir_path).SubFolders
-    Dim extracted_folder
+    Dim extracted_folder_path
     For Each subfolder In subfolders
-        If InStr(LCase(subfolder.Name), "luajit") > 0 Then
-            extracted_folder = subfolder.Name
+        If InStr(subfolder.Name, "LuaJIT") > 0 Then
+            extracted_folder_path = subfolder.Path
             Exit For
         End If
     Next
-    If extracted_folder <> "" Then
-        WScript.Echo "folder: " & extracted_folder
+    If extracted_folder_path <> "" Then
+        WScript.Echo "exctracted folder path: " & extracted_folder_path
     Else
         WScript.Echo "luajit folder not found in" & dest_folder
         WScript.Quit
     End If
 
-    src_path = BuildPath(BuildPath(download_dir_path, extracted_folder), "src")
-    luajit_exe_path = BuildPath(src_path, "luajit.exe")
-    lua51_dll_path = BuildPath(src_path, "lua51.dll")
+    luajit_src_path = BuildPath(extracted_folder_path, "src")
+    luajit_exe_path = BuildPath(luajit_src_path, "luajit.exe")
+    lua51_dll_path = BuildPath(luajit_src_path, "lua51.dll")
 
-    If Not FileExists(src_path & "/luajit.exe") Then
-        RenameFileSafe src_path, "luajit_rolling.h", "luajit.h"
+    If Not FileExists(luajit_exe_path) Then
+        RenameFileSafe luajit_src_path, "luajit_rolling.h", "luajit.h"
         WScript.Echo "Building LuaJIT..."
         build_cmd = "cmd /c call " & QuoteString(vs_command_prompt_path) & _
-                    " && cd /D " & QuoteString(src_path) & _
+                    " && cd /D " & QuoteString(luajit_src_path) & _
                     " && msvcbuild"
         RunCmd build_cmd, 1, True
     Else
@@ -80,11 +80,11 @@ Function Main()
         CreateFolder jit_folder_path
         WScript.Echo "folder created: " & jit_folder_path
     End If
-    CopyFolderSafe BuildPath(src_path, "jit"),  jit_folder_path
+    CopyFolderSafe BuildPath(luajit_src_path, "jit"),  jit_folder_path
 
     WScript.Echo "cleanup..."
     DeletePathSafe archive_path
-    DeletePathSafe BuildPath(download_dir_path, extracted_folder)
+    DeletePathSafe extracted_folder_path
 
     WScript.Echo "LuaJIT successfully installed! you can close this window"
 End Function
