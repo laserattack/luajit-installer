@@ -1,10 +1,10 @@
 # 🌑 LuaJIT installer
 
+These scripts are just the automatic execution of the installation described here [luajit.org/install.html](https://luajit.org/install.html)
+
 ## Windows 10+
 
 ### Prerequisites
-
-This script is just an automated execution of the installation described here [luajit.org/install.html](https://luajit.org/install.html)
 
 To build LuaJIT, you need _Microsoft Build Tools_. You probably have them. if not, then:
 
@@ -15,6 +15,8 @@ To build LuaJIT, you need _Microsoft Build Tools_. You probably have them. if no
     - Windows SDK
 
 ![](assets/build_tools.jpg)
+
+- You can run script, everything should work
 
 ### Installing
 
