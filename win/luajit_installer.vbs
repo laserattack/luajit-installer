@@ -105,19 +105,19 @@ Function RenameFileSafe(folder_path, original_name, new_name)
     End If
 
     ' создание нового путя
-    originalPath = BuildPath(folder_path, original_name)
-    newPath = BuildPath(folder_path, new_name)
+    original_path = BuildPath(folder_path, original_name)
+    new_path = BuildPath(folder_path, new_name)
 
     ' файл уже сущестувует
-    If FileExists(newPath) Then
+    If FileExists(new_path) Then
         WScript.Echo "file " & new_name & " already exists"
         Exit Function
     End If
 
     ' переименование
-    If FileExists(originalPath) Then
+    If FileExists(original_path) Then
         On Error Resume Next
-        MoveFile originalPath, newPath
+        MoveFile original_path, new_path
         If Err.Number <> 0 Then
             WScript.Echo "error: failed to rename file: " & Err.Description
         End If
