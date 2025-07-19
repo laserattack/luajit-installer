@@ -13,7 +13,7 @@ Function Main()
         WScript.Quit
     End If
 
-    vs_command_prompt_path = VsCommandPromptPath()
+    vs_command_prompt_path = VsCommandPromptPathSafe()
     If vs_command_prompt_path <> "" Then
         WScript.Echo "vs command prompt found"
     Else
@@ -87,20 +87,6 @@ Function Main()
     WScript.Echo "LuaJIT successfully installed! you can close this window"
 End Function
 
-Function VsCommandPromptPath()
-    Set shell = CreateObject("WScript.Shell")
-    batPath = shell.Exec("cmd /c where /r ""C:\Program Files"" VsDevCmd.bat 2>nul").StdOut.ReadAll()
-    If batPath = "" Then batPath = shell.Exec("cmd /c where /r ""C:\Program Files (x86)"" VsDevCmd.bat 2>nul").StdOut.ReadAll()
-    
-    If batPath <> "" Then
-        batPath = Trim(Split(batPath, vbCrLf)(0))
-        VsCommandPromptPath = batPath
-    Else
-        VsCommandPromptPath = ""
-    End If
-    Set shell = Nothing
-End Function
-
 Function RenameFile(folder_path, original_name, new_name)
     originalPath = BuildPath(folder_path, original_name)
     newPath = BuildPath(folder_path, new_name)
@@ -118,6 +104,31 @@ Function RenameFile(folder_path, original_name, new_name)
         WScript.Quit
     End If
 
+End Function
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+' Поиск Command Prompt for VS.
+' В случае какой-то ошибки завершает работу скрипта
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Function VsCommandPromptPathSafe()
+    On Error Resume Next
+    batPath = ExecCmd("cmd /c where /r ""C:\Program Files"" VsDevCmd.bat 2>nul").StdOut.ReadAll()
+    If batPath = "" Then batPath = ExecCmd("cmd /c where /r ""C:\Program Files (x86)"" VsDevCmd.bat 2>nul").StdOut.ReadAll()
+    If Err.Number <> 0 Then
+        WScript.Echo "error: failed to execute command: " & Err.Description
+        WScript.Quit
+    End If
+    On Error GoTo 0
+
+    If batPath <> "" Then
+        batPath = Trim(Split(batPath, vbCrLf)(0))
+        VsCommandPromptPathSafe = batPath
+    Else
+        VsCommandPromptPathSafe = ""
+    End If
 End Function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -355,6 +366,12 @@ End Function
 
 Function QuoteString(str)
     QuoteString = Chr(34) & str & Chr(34)
+End Function
+
+Function ExecCmd(cmd)
+    Set shell = CreateObject("WScript.Shell")
+    Set ExecCmd = shell.Exec(cmd)
+    Set shell = Nothing
 End Function
 
 Function RunCmd(command, window_style, wait_on_return)
