@@ -53,17 +53,22 @@ Function Main()
     Set fs = Nothing
 
     src_path = download_dir & extractedFolder & "/src"
-    WScript.Echo "LuaJIT src path: " & src_path
+    luajit_exe_path = src_path & "/luajit.exe"
+    lua51_dll_path = src_path & "/lua51.dll"
 
-    RenameFileIfExists src_path, "luajit_rolling.h", "luajit.h"
+    If Not FileExists(src_path & "/luajit.exe") Then
+        RenameFileIfExists src_path, "luajit_rolling.h", "luajit.h"
+        WScript.Echo "Building LuaJIT..."
+        build_cmd = "cmd /c call " & QuoteString(vs_command_prompt_path) & _
+                    " && cd /D " & QuoteString(src_path) & _
+                    " && msvcbuild"
+        ExecCmd build_cmd, 1, True
+    Else
+        WScript.Echo "LuaJIT is already built"
+    End If
 
-    WScript.Echo "Building LuaJIT..."
-    build_cmd = "cmd /c call " & QuoteString(vs_command_prompt_path) & _
-                " && cd /D " & QuoteString(src_path) & _
-                " && msvcbuild"
-    ExecCmd build_cmd, 1, True
-
-
+    CopyFile luajit_exe_path, download_dir
+    CopyFile lua51_dll_path, download_dir
 
     WScript.Echo "you can close this window"
 End Function
@@ -87,12 +92,12 @@ Function RenameFileIfExists(folderPath, originalName, newName)
     originalPath = fs.BuildPath(folderPath, originalName)
     newPath = fs.BuildPath(folderPath, newName)
 
-    If fs.FileExists(newPath) Then
+    If FileExists(newPath) Then
         WScript.Echo "file " & newName & " already exists"
         Exit Function
     End If
 
-    If fs.FileExists(originalPath) Then
+    If FileExists(originalPath) Then
         fs.MoveFile originalPath, newPath
         WScript.Echo "file " & originalName & " renamed to " & newName
     Else
@@ -113,31 +118,30 @@ Function UnzipArchive(archive_path, dst)
     Set fs = Nothing
 End Function
 
-Function MoveFile(sourceFile, destFolder)
-    Set shell = CreateObject("WScript.Shell")
+Function CopyFile(sourcePath, destFolder)
     Set fs = CreateObject("Scripting.FileSystemObject")
+    
+    If Not FileExists(sourcePath) Then
+        WScript.Echo "source file not found"
+        Set fs = Nothing
+        WScript.Quit
+    End If
+    
+    On Error Resume Next
+    fs.CopyFile sourcePath, destFolder & "/", True
+    If Err.Number <> 0 Then
+        WScript.Echo "copy error: " & Err.Description
+        Set fs = Nothing
+        WScript.Quit
+    End If
+    On Error GoTo 0
+    
+    WScript.Echo "File " & sourcePath & " copied successfully to " & destFolder
+End Function
 
-    If Not fs.FileExists(sourceFile) Then
-        WScript.Echo "file not found: " & sourceFile
-        Set shell = Nothing
-        Set fs = Nothing
-        WScript.Quit
-    End If
-    
-    cmd = "cmd /c copy " & Quote(sourceFile) & " " & Quote(destFolder) & " /Y"
-    
-    returnCode = shell.Run(cmd, 0, True)
-    
-    If returnCode = 0 Then
-        WScript.Echo "successful copying in " & destFolder
-    Else
-        WScript.Echo "copy error (code " & returnCode & ")"
-        Set shell = Nothing
-        Set fs = Nothing
-        WScript.Quit
-    End If
-    
-    Set sh = Nothing
+Function FileExists(path)
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    FileExists = fs.FileExists(path)
     Set fs = Nothing
 End Function
 
