@@ -6,7 +6,7 @@ These scripts are just the automatic execution of the installation described her
 
 ### Prerequisites
 
-To build LuaJIT, you need _Microsoft Build Tools_. You probably have them. if not, then:
+To build LuaJIT, you need _Microsoft Build Tools_. You probably have them (to check if you have them, run the script and see if LuaJIT is installed). if not, then:
 
 - Download _Microsoft Build Tools_ installer for example here [aka.ms/vs/17/release/vs_buildtools.exe](https://aka.ms/vs/17/release/vs_buildtools.exe)
 - Run it
