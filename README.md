@@ -21,7 +21,7 @@ As a result, there should be something like this in the search (the version may 
 ' settings block start
 
 archive_url = "https://github.com/LuaJIT/LuaJIT/archive/refs/tags/v2.1.ROLLING.zip"
-download_dir = "C:/LuaJIT/" ' auto-created if missing
+download_dir_path = "C:/LuaJIT/" ' auto-created if missing
 
 ' settings block end
 ```
