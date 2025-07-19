@@ -59,6 +59,7 @@ Function Main()
         build_cmd = "cmd /c call " & QuoteString(vs_command_prompt_path) & _
                     " && cd /D " & QuoteString(luajit_src_path) & _
                     " && msvcbuild"
+        WScript.Echo "build cmd: " & build_cmd
         RunCmd build_cmd, 1, True
     Else
         WScript.Echo "LuaJIT is already built"
