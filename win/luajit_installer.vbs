@@ -181,31 +181,53 @@ Function CopyFile(source_path, dest_folder)
     WScript.Echo "File " & source_path & " copied successfully to " & dest_folder
 End Function
 
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+' Удаление файла/папки по переданному пути.
+' В случае какой-то ошибки завершает работу скрипта
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
 Function DeletePath(path)
-    Set fs = CreateObject("Scripting.FileSystemObject")
     
-    If Not fs.FileExists(path) And Not fs.FolderExists(path) Then
+    If Not FileExists(path) And Not FolderExists(path) Then
         WScript.Echo "path not found: " & path
-        Set fs = Nothing
         WScript.Quit
     End If
     
     On Error Resume Next
-    If fs.FileExists(path) Then
-        fs.DeleteFile path, True
+    If FileExists(path) Then
+        DeleteFile path, True
         WScript.Echo "file deleted: " & path
-    ElseIf fs.FolderExists(path) Then
-        fs.DeleteFolder path, True
+    ElseIf FolderExists(path) Then
+        DeleteFolder path, True
         WScript.Echo "folder deleted: " & path
     End If
     
     If Err.Number <> 0 Then
         WScript.Echo "delete error: " & Err.Description
-        Set fs = Nothing
         WScript.Quit
     End If
     On Error GoTo 0
     
+End Function
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+' Базовые функции. Не делают никаких проверок.
+' Просто выполняют указанное действие.
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Function DeleteFile(path, force_deletetion)
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    fs.DeleteFile path, True
+    Set fs = Nothing
+End Function
+
+Function DeleteFolder(path, force_deletetion)
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    fs.DeleteFolder path, True
     Set fs = Nothing
 End Function
 
@@ -236,5 +258,7 @@ Function ExecCmd(command, window_style, wait_on_return)
     shell.Run command, window_style, wait_on_return
     Set shell = Nothing
 End Function
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 Main()
