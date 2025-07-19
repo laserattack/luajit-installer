@@ -131,6 +131,19 @@ End Function
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 Function UnzipArchiveSafe(archive_path, dst_folder_path)
+
+    ' проверки на несоответствие типов файлов
+    If FolderExists(archive_path) Then
+        WScript.Echo "error: archive path is a folder, not a file: " & archive_path
+        WScript.Quit
+    End If
+
+    If FileExists(dst_folder_path) Then
+        WScript.Echo "error: dst path is a file, not a folder: " & dst_folder_path
+        WScript.Quit
+    End If
+
+    ' проверки наличия файлов
     If Not FileExists(archive_path) Then
         WScript.Echo "error: archive path not found: " & archive_path
         WScript.Quit
@@ -142,7 +155,16 @@ Function UnzipArchiveSafe(archive_path, dst_folder_path)
     End If
 
     tar_cmd = "tar -xf " & QuoteString(archive_path) & " -C " & QuoteString(dst_folder_path)
+    On Error Resume Next
     ExecCmd "cmd /c " & tar_cmd, 0, True
+    
+    ' обработка ошибок выполнения
+    If Err.Number <> 0 Then
+        WScript.Echo "error during unzip: " & Err.Description
+        WScript.Echo "command that failed: " & tar_cmd
+        WScript.Quit
+    End If
+    On Error GoTo 0
 End Function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
