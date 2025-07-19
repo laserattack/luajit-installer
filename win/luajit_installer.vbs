@@ -102,9 +102,8 @@ Function VsCommandPromptPath()
 End Function
 
 Function RenameFile(folder_path, original_name, new_name)
-    Set fs = CreateObject("Scripting.FileSystemObject")
-    originalPath = fs.BuildPath(folder_path, original_name)
-    newPath = fs.BuildPath(folder_path, new_name)
+    originalPath = BuildPath(folder_path, original_name)
+    newPath = BuildPath(folder_path, new_name)
 
     If FileExists(newPath) Then
         WScript.Echo "file " & new_name & " already exists"
@@ -112,15 +111,13 @@ Function RenameFile(folder_path, original_name, new_name)
     End If
 
     If FileExists(originalPath) Then
-        fs.MoveFile originalPath, newPath
+        MoveFile originalPath, newPath
         WScript.Echo "file " & original_name & " renamed to " & new_name
     Else
         WScript.Echo "file " & original_name & " not found"
-        Set fs = Nothing
         WScript.Quit
     End If
 
-    Set fs = Nothing
 End Function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -302,6 +299,18 @@ End Function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+Function MoveFile(src_path, dst_path)
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    fs.MoveFile src_path, dst_path
+    Set fs = Nothing
+End Function
+
+Function BuildPath(path1, path2)
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    BuildPath = fs.BuildPath(path1, path2)
+    Set fs = Nothing
+End Function
+
 Function CopyFolder(src_path, dst_path, overwriting)
     Set fs = CreateObject("Scripting.FileSystemObject")
     fs.CopyFolder src_path, dst_path, overwriting
@@ -314,15 +323,15 @@ Function CopyFile(src_path, dst_path, overwriting)
     Set fs = Nothing
 End Function
 
-Function DeleteFile(path, force_deletetion)
+Function DeleteFile(path, force_deletion)
     Set fs = CreateObject("Scripting.FileSystemObject")
-    fs.DeleteFile path, True
+    fs.DeleteFile path, force_deletion
     Set fs = Nothing
 End Function
 
 Function DeleteFolder(path, force_deletetion)
     Set fs = CreateObject("Scripting.FileSystemObject")
-    fs.DeleteFolder path, True
+    fs.DeleteFolder path, force_deletion
     Set fs = Nothing
 End Function
 
