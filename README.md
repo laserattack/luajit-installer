@@ -35,3 +35,7 @@ download_dir_path = "C:/LuaJIT/" ' auto-created if missing
 ```
 
 The script launches with just a double-click
+
+## Linux
+
+Coming soon...
